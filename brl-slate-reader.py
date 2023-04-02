@@ -2,9 +2,9 @@ import cv2
 import os
 import shutil
 import re
-from alive_progress import alive_bar
 import numpy as np
 from fastai.vision.all import *
+
 
 #Clear the command line screen
 os.system('clear')
@@ -14,10 +14,11 @@ cwd = os.getcwd()
 #(found within the "OCR Raw Data" subfolder of the current working folder,
 #ex: python3 brl-slate-reader.py "my_file.txt") the OCR code will be
 #skipped altogether ("skip_OCR" will be set to "True") and only the writing
-#of the Portable Embosser Format (PEF) file and transcription to printed
+#of the Braille Ready File format (BRF) file and transcription to printed
 #English (RTF document) will be performed. If no other argument is provided,
 #the code will carry on with the OCR step.
 skip_OCR = False
+txt_file_name = None
 
 #The "x" coordinate (in pixels and in landscape mode) top left dot of the top left Braille cell
 #needs to be provided after the "top_left_x_pixel:" argument in order to locate the starting
@@ -43,10 +44,10 @@ vertical_pixels = None
 horizontal_spacer_pixels = None
 vertical_spacer_pixels = None
 #Also, the user needs to specify the number of columns and rows on the slate, after
-#the "cols:" and "rows:" arguments, respectively, so that the segmentation results
+#the "slate_cols:" and "slate_rows:" arguments, respectively, so that the segmentation results
 #do not include the marks left by the pins that hold the page in place within the slate.
-cols = None
-rows = None
+slate_cols = None
+slate_rows = None
 
 #The user has the option of selecting "grade I" Braille in order for the code
 #to only use grade I when transcribing the Braille into printed English. This will
@@ -54,11 +55,19 @@ rows = None
 #at the end of the document.
 grade_1 = False
 
+#The default number of columns per page in the Braille Ready File format (BRF) file
+#is set to 40 and there are 25 rows per page by default. These values may be
+#changed by the user by entering the numbers after the "columns_per_page:" and
+#"rows_per_page:" arguments, respectively.
+columns_per_page = 40
+rows_per_page = 25
+
 #The "get_parameters()" function parses the abovementioned arguments in a list (either arguments
 #passed in when running the Python code or the values extracted from the "txt" file that stores
 #the default parameters after the calibration of the slate), in order to guide the segmentation.
 def get_parameters(list, skip_OCR, top_left_x_pixel, top_left_y_pixel,
-horizontal_pixels, vertical_pixels, horizontal_spacer_pixels, vertical_spacer_pixels, cols, rows, grade_1):
+horizontal_pixels, vertical_pixels, horizontal_spacer_pixels, vertical_spacer_pixels,
+slate_cols, slate_rows, grade_1, columns_per_page, rows_per_page):
     for i in range(len(list)):
         if list[i][-4:] == ".txt":
             skip_OCR = True
@@ -71,42 +80,52 @@ horizontal_pixels, vertical_pixels, horizontal_spacer_pixels, vertical_spacer_pi
             horizontal_pixels = int(list[i].strip()[18:])
         elif list[i][:16].strip().lower() == "vertical_pixels:":
             vertical_pixels = int(list[i].strip()[16:])
-        elif list[i][:5].strip().lower() == "cols:":
-            cols = int(list[i][5:].strip())
-        elif list[i][:5].strip().lower() == "rows:":
-            rows = int(list[i][5:].strip())
+        elif list[i][:11].strip().lower() == "slate_cols:":
+            slate_cols = int(list[i][11:].strip())
+        elif list[i][:11].strip().lower() == "slate_rows:":
+            slate_rows = int(list[i][11:].strip())
         elif list[i][:25].strip().lower() == "horizontal_spacer_pixels:":
             horizontal_spacer_pixels = int(list[i][25:].strip())
         elif list[i][:23].strip().lower() == "vertical_spacer_pixels:":
             vertical_spacer_pixels = int(list[i][23:].strip())
         elif list[i].strip().lower() in ["grade_1", "grade 1"]:
             grade_1 = True
+        elif list[i][:17].strip().lower() == "columns_per_page:":
+            columns_per_page = list[i][17:].strip()
+        elif list[i][:14].strip().lower() == "rows_per_page:":
+            rows_per_page = list[i][:14].strip()
+
     return (skip_OCR, top_left_x_pixel, top_left_y_pixel, horizontal_pixels,
-    vertical_pixels, horizontal_spacer_pixels, vertical_spacer_pixels, cols, rows, grade_1)
+    vertical_pixels, horizontal_spacer_pixels, vertical_spacer_pixels, slate_cols,
+    slate_rows, grade_1, columns_per_page, rows_per_page)
 
 (skip_OCR, top_left_x_pixel, top_left_y_pixel, horizontal_pixels, vertical_pixels,
-horizontal_spacer_pixels, vertical_spacer_pixels, cols, rows, grade_1) = (get_parameters(sys.argv,skip_OCR,
+horizontal_spacer_pixels, vertical_spacer_pixels, slate_cols, slate_rows, grade_1,
+columns_per_page, rows_per_page) = (get_parameters(sys.argv,skip_OCR,
  top_left_x_pixel, top_left_y_pixel, horizontal_pixels, vertical_pixels,
- horizontal_spacer_pixels, vertical_spacer_pixels, cols, rows, grade_1))
+ horizontal_spacer_pixels, vertical_spacer_pixels, slate_cols, slate_rows, grade_1,
+ columns_per_page, rows_per_page))
 
 #If the user hasn't provided all of the required parameters mentioned above, and if a
 #"txt" file was generated after calibration of the slate, these values will be extracted
 #with the "get_parameters()" function, by passing in the list of parameters "default_parameters_list".
 if ((top_left_x_pixel == None or top_left_y_pixel == None or horizontal_pixels == None or
-vertical_pixels == None or cols == None or rows == None) and
+vertical_pixels == None or slate_cols == None or slate_rows == None) and
 os.path.exists(os.path.join(cwd, "Default_Parameters", "Default_Parameters.txt"))):
     with open(os.path.join(cwd, "Default_Parameters", "Default_Parameters.txt"), "r", encoding = "utf-8") as default_parameters_file:
         default_parameters_list = default_parameters_file.readlines()
     default_parameters_list = [element.strip() for element in default_parameters_list]
     (skip_OCR, top_left_x_pixel, top_left_y_pixel, horizontal_pixels, vertical_pixels,
-    horizontal_spacer_pixels, vertical_spacer_pixels, cols, rows, grade_1) = (get_parameters(default_parameters_list,
+    horizontal_spacer_pixels, vertical_spacer_pixels, slate_cols, slate_rows, grade_1,
+    columns_per_page, rows_per_page) = (get_parameters(default_parameters_list,
     skip_OCR, top_left_x_pixel, top_left_y_pixel, horizontal_pixels, vertical_pixels,
-    horizontal_spacer_pixels, vertical_spacer_pixels, cols, rows, grade_1))
+    horizontal_spacer_pixels, vertical_spacer_pixels, slate_cols, slate_rows, grade_1,
+    columns_per_page, rows_per_page))
 
 #If there are missing parameters and the slate is not yet calibrated, the user will be prompted
 #to provide the values required for the calibration step.
 elif (top_left_x_pixel == None or top_left_y_pixel == None or horizontal_pixels == None or
-vertical_pixels == None or cols == None or rows == None):
+vertical_pixels == None or slate_cols == None or slate_rows == None):
     print('Please provide the following information as additional prameters when running the Python code: ' +
     '\n\n-"x" pixel coordinate of the top left dot in the top left Braille cell, preceded by "top_left_x_pixel:"' +
     '\n-"y" pixel coordinate of the top left dot in the top left braile cell, preceded by "top_left_y_pixel:"' +
@@ -114,8 +133,9 @@ vertical_pixels == None or cols == None or rows == None):
     'dot of the top right Braille cell, preceded by "horizontal_pixels:"' +
     '\n-Number of pixels in-between the top left dot of the top left Braille cell and the top left ' +
     'dot of the bottom left Braille cell, preceded by "vertical_pixels:"' +
-    '\n-Number of columns per line, preceded by "cols:"' +
-    '\n-Number of rows per page, preceded by "rows:"\n\n')
+    '\n-Number of columns per line, preceded by "slate_cols:"' +
+    '\n-Number of rows per page, preceded by "slate_rows:"\n\n')
+    quit()
 
 #If the slate is being calibrated for the first time, or if the user has provided alternative their
 #own values for "horizontal_spacer_pixels:" or "vertical_spacer_pixels:", then the new values will
@@ -130,15 +150,15 @@ else:
           "top_left_y_pixel:" + str(top_left_y_pixel), "horizontal_pixels:" +
           str(horizontal_pixels), "vertical_pixels:" + str(vertical_pixels),
           "horizontal_spacer_pixels:" + str(horizontal_spacer_pixels),
-          "vertical_spacer_pixels:" + str(vertical_spacer_pixels), "cols:" +
-          str(cols), "rows:" + str(rows)]
+          "vertical_spacer_pixels:" + str(vertical_spacer_pixels), "slate_cols:" +
+          str(slate_cols), "slate_rows:" + str(slate_rows)]
           for par in default_parameters_list:
               if par != None:
                   default_parameters_file.write(par + "\n")
 
 
 if (skip_OCR == False and top_left_x_pixel != None and top_left_y_pixel != None and horizontal_pixels != None and
-vertical_pixels != None and cols != None and rows != None):
+vertical_pixels != None and slate_cols != None and slate_rows != None):
     #The x and y coordinates are determined for every character in a JPEG image of
     #scanned Braille text (in landscape mode) written using a Braille slate, at 300 dpi
     #resolution and with.
@@ -174,7 +194,7 @@ vertical_pixels != None and cols != None and rows != None):
         os.makedirs(os.path.join(cwd,  "OCR Predictions", OCR_text_file_name))
 
     print("Currently processing a total of " + str(len(JPEG_file_names)) +
-    ' JPEG scanned images of Braille text written \non the Perkins Brailler. ' +
+    ' JPEG scanned images of Braille text written \non a Braille slate. ' +
     'For best results, these should be scanned as grayscale \nJPEG images on a ' +
     'flatbed scanner at a resolution of 300 dpi.\n')
 
@@ -185,7 +205,7 @@ vertical_pixels != None and cols != None and rows != None):
     #images generated above at a resolution of 300 dpi.
     character_width = 60
     character_height = 90
-    print("\nThe following parameters could help you fine-tune the segmentation of the " +
+    print("\nThe following parameters might help you fine-tune the segmentation of the " +
     "Braille scanned pages:\n")
     if horizontal_spacer_pixels != None:
         print("horizontal_spacer_pixels:" + str(horizontal_spacer_pixels))
@@ -195,10 +215,10 @@ vertical_pixels != None and cols != None and rows != None):
     #these variables will be determined by subtracting the character width and height from the
     #average number of pixels in-between characters on the horizontal and vertical axis, respectively.
     if horizontal_spacer_pixels == None:
-        horizontal_spacer_pixels = round(horizontal_pixels/cols) - character_width
+        horizontal_spacer_pixels = round(horizontal_pixels/slate_cols) - character_width
         print("horizontal_spacer_pixels:" + str(horizontal_spacer_pixels))
     if vertical_spacer_pixels == None:
-        vertical_spacer_pixels = round(vertical_pixels/rows) - character_height
+        vertical_spacer_pixels = round(vertical_pixels/slate_rows) - character_height
         print("vertical_spacer_pixels:" + str(vertical_spacer_pixels) + "\n")
 
     #The starting point is moved backwards so that the rectangle doesn't
@@ -213,11 +233,11 @@ vertical_pixels != None and cols != None and rows != None):
     #with the first Braille cell, and the remaining "x" and "y" coordinates for every
     #column and row, respectively, are gathered.
     x_coordinates = [[top_left_x_pixel, top_left_x_pixel+character_width]]
-    for i in range(1,cols):
+    for i in range(1,slate_cols):
         next_x = x_coordinates[-1][1] + horizontal_spacer_pixels
         x_coordinates.append([next_x, next_x+character_width])
     y_coordinates = [[top_left_y_pixel, top_left_y_pixel-character_height]]
-    for i in range(1,rows):
+    for i in range(1,slate_rows):
         next_y = y_coordinates[-1][1] - vertical_spacer_pixels
         y_coordinates.append([next_y, next_y-character_height])
 
@@ -241,13 +261,13 @@ vertical_pixels != None and cols != None and rows != None):
     #"with character rectangles" suffix.
     #with alive_bar(len(JPEG_file_names)) as bar:
     character_string = ""
-    with open(os.path.join(cwd, "OCR Predictions", OCR_text_file_name, OCR_text_file_name + '-OCR results.txt'), 'a+') as f:
+    with open(os.path.join(cwd, "OCR Predictions", OCR_text_file_name, OCR_text_file_name + '-OCR results.txt'), 'a+', encoding = "utf-8") as f:
         for i in range(len(JPEG_file_names)):
             #Insert two new lines ("\n\n") at the beginning of every page after the
             #first page ("JPEG_file_names[0]"). This way, every page in the ".txt"
             #file will be separated by an empty line, to facilitate making corrections
             #if needed. If the ".txt" file is resubmitted to the present code to generate
-            #updated RTF and PEF files reflecting the corrections, these "\n\n" would be
+            #updated RTF and BRF files reflecting the corrections, these "\n\n" would be
             #removed to ensure that no superfluous line breaks make their way into the
             #final documents. Furthermore, an empty Braille cell is added to the end of
             #"character_string" to make sure there is a space in between the last word of
@@ -339,8 +359,8 @@ vertical_pixels != None and cols != None and rows != None):
             #contents of the preceding line, line continuations without spaces ("⠐") shouldn't be used
             #in the current application, as these would lead to confusion with other Braille characters,
             #such as intial-letter contractions.
-            #The line continuation Braille symbols with spaces need to be removed, as the PEF file will
-            #likely not have the same margins as the Perkins Brailler and as they are irrelevant in the
+            #The line continuation Braille symbols with spaces need to be removed, as the BRF file will
+            #likely not have the same margins as the slate and as they are irrelevant in the
             #printed English RTF document.
             current_page_string.replace("⠐⠐", "⠀")
 
@@ -351,8 +371,8 @@ vertical_pixels != None and cols != None and rows != None):
 #(found within the "OCR Raw Data" subfolder of the current working folder,
 #ex: python3 brl-slate-reader.py "my_file.txt") the OCR code will be
 #skipped altogether and only the writing of the Portable Embosser Format
-#(PEF) file and transcription to printed English (RTF document) will be performed.
-else:
+#(BRF) file and transcription to printed English (RTF document) will be performed.
+elif txt_file_name != None:
     #Extracting folder name from file name, up to the last hyphen.
     #If there isn't already a subfolder by that name in the "OCR Predictions"
     #folder, such a one will be created.
@@ -369,7 +389,7 @@ else:
     #is opened and its text (after removal of the "\n\n" carriage
     #returns that were included to facilitate reviewing the Braille text
     #page by page) is stored as a string in "character_string".
-    with open(os.path.join(cwd,  "OCR Raw Data", txt_file_name, "r")) as g:
+    with open(os.path.join(cwd,  "OCR Raw Data", txt_file_name, "r", encoding = "utf-8")) as g:
         character_string = g.read().replace("\n", "")
 
 #The user has the option of selecting "grade I" Braille in order for the code
@@ -379,173 +399,214 @@ else:
 if grade_1 == True:
     character_string = "⠰⠰⠰" + character_string + "⠰⠄"
 
-#The Portable Embosser Format (PEF) file needs to be generated before removing
-#Braille characters such as "dot locator for mention" or "transcriber-defined
-#typeform indicators", as these symbols could be relevant to the Braille reader.
-#The number of columns and rows per page will be defined below and could be changed
-#by the users based on the specifications of their Braille embosser/e-reader.
-#The section break RTF command that starts at a new page ("\sbkpage"), which maps to the
-#following Braille characters ("⠸⠡⠎⠃⠅⠏⠁⠛⠑"), will be changed for the appropriate
-#PEF section tags (<section> </section>). A similar approach will be taken for
-#page breaks "\page" (mapping to the Braille "⠸⠡⠏⠁⠛⠑"), and carriage returns
-#"\line" (corresponding to the Braille "⠸⠡⠇⠔⠑")
-columns_per_page = 40
-lines_per_page = 25
-
 #As the Braille characters for the section, page and line breaks will be converted
-#to the PEF tags within the Braille string, a copy of "character_string is made".
-pef_file_string = character_string
+#to the BRF elements within the Braille string, a copy of "character_string is made".
+brf_file_string = character_string
 
-#Upon assembling the PEF file, opening and closing volume, section, page and row
-#tags will be included, with the "pef_file_string" sandwitched in between.
-#Consequently, upon finding a RTF command for a section, page or line break,
-#only the closing tag needs to be included along with the opening tag for the
-#next section, page or line (and the appropriate number of new line ("\n")
-#and tab ("\t") formatting elements.) The Braille equivalent of the RTF command
-#"\tab" ("⠸⠡⠞⠁⠃") will be changed to two successive empty Braille cells ("⠀⠀"),
-#while "\par" ("⠸⠡⠏⠜") will be mapped to a line break followed by two successive
-#empty Braille cells ("</row>\n\t\t\t\t\t<row>⠀⠀"). An empty Braille cell is
-#included at the end of every pattern in the lines below to avoid being left over
-#with excessive spaces, as PEF tags don't allow for optional spaces the way RTF
-#tags do, and since the Braille will not be submitted to transcription code that
-#requires determining whether the Braille characters that follow the patterns
-#are free standing or not.
-pef_file_string = re.sub("⠸⠡⠞⠁⠃⠀", "⠀⠀", pef_file_string)
-pef_file_string = re.sub("⠸⠡⠇⠔⠑⠀", "</row>\n\t\t\t\t\t<row>", pef_file_string)
-pef_file_string = re.sub("⠸⠡⠏⠜⠀", "</row>\n\t\t\t\t\t<row>⠀⠀", pef_file_string)
-pef_file_string = re.sub("⠸⠡⠏⠁⠛⠑⠀", "</row>\n\t\t\t\t</page>\n\t\t\t\t<page>\n\t\t\t\t\t<row>", pef_file_string)
-pef_file_string = re.sub("⠸⠡⠎⠃⠅⠏⠁⠛⠑⠀", "</row>\n\t\t\t\t</page>\n\t\t\t</section>\n\t\t\t<section>\n\t\t\t\t</page>\n\t\t\t\t\t<row>", pef_file_string)
+brf_characters = {"⠀":" ", "⠁":"A", "⠂":"1", "⠃":"B", "⠄":"'", "⠅":"K", "⠆":"2", "⠇":"L", "⠈":"@", "⠉":"C",
+"⠊":"I", "⠋":"F", "⠌":"/", "⠍":"M", "⠎":"S", "⠏":"P", "⠐":'\"', "⠑":"E", "⠒":"3", "⠓":"H", "⠔":"9", "⠕":"O",
+"⠖":"6", "⠗":"R", "⠘":"^", "⠙":"D", "⠚":"J", "⠛":"G", "⠜":">", "⠝":"N", "⠞":"T", "⠟":"Q", "⠠":",", "⠡":"*",
+"⠢":"5", "⠣":"<", "⠤":"-", "⠥":"U", "⠦":"8", "⠧":"V", "⠨":".", "⠩":"%", "⠪":"[", "⠫":"$", "⠬":"+", "⠭":"X",
+"⠮":"!", "⠯":"&", "⠰":";", "⠱":":", "⠲":"4", "⠳":"\\", "⠴":"0", "⠵":"Z", "⠶":"7", "⠷":"(", "⠸":"_", "⠹":"?",
+"⠺":"W", "⠻":"]", "⠼":"#", "⠽":"Y", "⠾":")", "⠿":"="}
 
+#Upon assembling the BRF file, the following RTF commands will be dealt with as follows:
+# - "\tab" will be changed for two successive empty braille cells ("⠀⠀").
+# - "\line" will be changed for a carriage return ("\n").
+# - "\par" will be changed for a carriage return ("\n"), followed by two successive
+#regular spaces ("  ").
+# - "\page" will be changed for a form feed tag ("\f").
+# - The document will be split at every instance of "\sbkpage" and a corresponding
+#amount of numbered BRF files will be generated in ascending order.
 
+#An empty Braille cell is included at the end of every pattern in the lines below
+#to avoid being left over with excessive spaces, as these optional spaces following
+#RTF commands aren't required in the BRF file, and since the Braille will not be
+#submitted to transcription code that requires determining whether the Braille
+#characters that follow the patterns are free standing or not.
+brf_file_string = re.sub("⠸⠡⠞⠁⠃⠀", "  ", brf_file_string)
+brf_file_string = re.sub("⠸⠡⠇⠔⠑⠀", "\n", brf_file_string)
+brf_file_string = re.sub("⠸⠡⠏⠜⠀", "\n  ", brf_file_string)
+brf_file_string = re.sub("⠸⠡⠏⠁⠛⠑⠀", "\f", brf_file_string)
 
-#The "pef_rows" list will be populated with the Braille characters,
-#up to a maximal length of "columns_per_page". The "current_row_length"
-#counter (initialized at 0 and reinitialized every time there is a
-#section, row or page break) will keep track of the length of the pef
-#row and determine when it is time to start a new row.
-pef_rows = []
-current_row_length = 0
-#The list "non_empty_braille_cells" is assembled by splitting
-#"pef_file_string" at every empty Braille cell ("⠀"). The
-#elements of this list will be appended to the list "pef_rows"
-#while "current_row_length" is below "columns_per_page" + 1
-#(+1 being added to accomodate an empty Braille cell after
-#adding the "non-non_empty_braille_cells" element "non-empty".)
-#If the "non-empty" element is comprised only of Braille
-#characters (and does not contain an "r" present in all of
-#the "re.sub" substitutions above for section, page and line
-#breaks, as each one of these contains a <row> tag having
-#an "r" in it) the length of the "non_empty" element will be
-#simply determined by "len(non_empty)" for computational
-#efficiency and the "current_row_length" will be incremented
-#by that amount. For "non-empty" elements containing an "r",
-#the length will be determined by determining the length
-#of the match corresponding to a pattern excluding the
-#the following: "\n\t<>sectionrowpage/\\\\" in order to
-#only account for the length of Braille characters  (if any)
-#in the "non-empty" element.
-non_empty_braille_cells = re.split("⠀", pef_file_string)
-for non_empty in non_empty_braille_cells:
-    if "r" not in non_empty:
+#If there are section breaks in the "brf_file_string", a "BRF" folder
+#will be generated and individual BRF files for each section will be stored there.
+if brf_file_string.find("⠸⠡⠎⠃⠅⠏⠁⠛⠑⠀") != -1:
+    if not os.path.exists(os.path.join(cwd, "OCR Predictions", OCR_text_file_name, "BRF")):
+        os.makedirs(os.path.join(cwd, "OCR Predictions", OCR_text_file_name, "BRF"))
+
+    brf_file_list = re.split("⠸⠡⠎⠃⠅⠏⠁⠛⠑⠀", brf_file_string)
+    #Empty matches ("") are filtered out of the "brf_file_list" so as to avoid
+    #having empty BRF files.
+    brf_file_list = [element for element in brf_file_list if element != ""]
+    for i in range(1, len(brf_file_list)+1):
+        #The "brf_rows" list will be populated with the BRF characters,
+        #up to a maximal length of "columns_per_page". The "current_row_length"
+        #counter (initialized at 0 and reinitialized every time there is a
+        #section, row or page break) will keep track of the length of the BRF
+        #row and determine when it is time to start a new row.
+        brf_rows = []
+        current_row_length = 0
+        current_row_number = 0
+        #The list "non_empty_braille_cells" is assembled by splitting
+        #"brf_file_list[i]" at every empty Braille cell ("⠀"). The
+        #elements of this list will be appended to the list "brf_rows"
+        #while "current_row_length" is below "columns_per_page" + 1
+        #(+1 being added to accomodate an empty Braille cell after
+        #adding the "non_empty_braille_cells" element "non-empty".)
+        non_empty_braille_cells = re.split("⠀", brf_file_list[i])
+        for non_empty in non_empty_braille_cells:
+            length_non_empty = len(non_empty)
+            #If there is a form feed tag "\f", then a new line is
+            #appended to "brf_rows" containing a "\f" tag, and the
+            #"current_row_length" and "current_row_number" are both
+            #reset to zero, as a new page is started.
+            if non_empty == "\f":
+                brf_rows.append("\f")
+                current_row_length = 0
+                current_row_number = 0
+            #If a paragraph break is encountered (carriage return followed by
+            #two regular spaces as place holders for empty Braille cells), then
+            #a new line is appended to "brf_rows" containing a carriage return
+            #and two empty Braille cells, and the "current_row_length" is set to two.
+            elif non_empty == "\n  ":
+                brf_rows.append("\n  ")
+                current_row_length = 2
+                current_row_number += 1
+            #If a line break ("\n") is found "current_row_length" is reset
+            #to zero and "current_row_number is incremented by one".
+            elif non_empty == "\n":
+                brf_rows.append("\n")
+                current_row_length = 0
+                current_row_number += 1
+            #If the current line can accomodate the "non_empty" element
+            #in addition to an empty Braille cell, then the current
+            #"brf_row" is extended with these characters and the
+            #"current_row_length" is incremented by the length
+            #of "non_empty" plus one for the empty Braille cell.
+            elif current_row_length + length_non_empty < columns_per_page:
+                brf_rows.extend(non_empty + " ")
+                current_row_length += length_non_empty+1
+            #Otherwise, a new row is started, the current "non_empty"
+            #element is appended to it along with an empty Braille cell,
+            #and the "current_row_length" counter is reset to the current
+            #contents of the new row.
+            else:
+                brf_rows.append("\n" + non_empty + " ")
+                current_row_length = length_non_empty+1
+                current_row_number += 1
+            #If the current row number is equal to "rows_per_page"-1,
+            #it means that the next line should be on the next page,
+            #given that "current_row_number" is initialized to zero.
+            #A form feed tag ("\f") is then appended to "brf_rows".
+            if current_row_number == rows_per_page-1:
+                brf_rows.append("\f")
+                current_row_length = 0
+                current_row_number = 0
+
+        #"brf_file_string" is overwritten with the joining of every element
+        #of the "brf_rows" list with empty strings, as the empty Braille cells
+        #have already been added in between the "non_empty_braille_cells" elements.
+        brf_file_string = "".join(brf_rows)
+
+        #After adding the carriage returns, the remaining braille characters in the
+        #updated "brf_file_string" are transcribed into BRF ASCII characters.
+        mapping_table_brf = brf_file_list[i].maketrans(brf_characters)
+        brf_file_list[i] = brf_file_list[i].translate(mapping_table_brf)
+
+        #A BRF file is assembled here and saved in the "BRF" folder.
+        brf_file_name = OCR_text_file_name + "-Part " + str(i) + ".brf"
+        with open(os.path.join(cwd, "OCR Predictions", OCR_text_file_name, "BRF", brf_file_name), "w", encoding = "utf-8") as brf_file:
+            brf_file.write(brf_file_list[i])
+
+#If there isn't any section breaks, then only one BRF file will be generated and
+#no "BRF" folder will be created.
+else:
+    #The "brf_rows" list will be populated with the BRF characters,
+    #up to a maximal length of "columns_per_page". The "current_row_length"
+    #counter (initialized at 0 and reinitialized every time there is a
+    #section, row or page break) will keep track of the length of the BRF
+    #row and determine when it is time to start a new row.
+    brf_rows = []
+    current_row_length = 0
+    current_row_number = 0
+    #The list "non_empty_braille_cells" is assembled by splitting
+    #"brf_file_string" at every empty Braille cell ("⠀"). The
+    #elements of this list will be appended to the list "brf_rows"
+    #while "current_row_length" is below "columns_per_page" + 1
+    #(+1 being added to accomodate an empty Braille cell after
+    #adding the "non_empty_braille_cells" element "non-empty".)
+    non_empty_braille_cells = re.split("⠀", brf_file_string)
+    for non_empty in non_empty_braille_cells:
         length_non_empty = len(non_empty)
-    elif "r" in non_empty:
-        pattern = re.compile("[^ \n\t<>sectionrowpage/\\\\]")
-        match_non_empty = re.match(pattern, non_empty)
-        length_non_empty = len(match.group(0))
-        current_row_length = length_non_empty
-    #If the current line can accomodate the "non_empty" element
-    #in addition to an empty Braille cell, then the current
-    #"pef_row" is extended with these characters and the
-    #"current_row_length" is incremented by the length
-    #of "non_empty" plus one for the empty Braille cell.
-    if current_row_length + length_non_empty < columns_per_page:
-        pef_rows.extend(non_empty + "⠀")
-        current_row_length += length_non_empty+1
-    #Otherwise, a new row is started, the current "non_empty"
-    #element is appended to it along with an empty Braille cell,
-    #and the "current_row_length" counter is reset to the current
-    #contents of the new row.
-    else:
-        pef_rows.append("</row>\n\t\t\t\t\t<row>" + non_empty + "⠀")
-        current_row_length = length_non_empty+1
+        #If there is a form feed tag "\f", then a new line is
+        #appended to "brf_rows" containing a "\f" tag, and the
+        #"current_row_length" and "current_row_number" are both
+        #reset to zero, as a new page is started.
+        if non_empty == "\f":
+            brf_rows.append("\f")
+            current_row_length = 0
+            current_row_number = 0
+        #If a paragraph break is encountered (carriage return followed by
+        #two regular spaces as place holders for empty Braille cells), then
+        #a new line is appended to "brf_rows" containing a carriage return
+        #and two empty Braille cells, and the "current_row_length" is set to two.
+        elif non_empty == "\n  ":
+            brf_rows.append("\n  ")
+            current_row_length = 2
+            current_row_number += 1
+        #If a line break ("\n") is found "current_row_length" is reset
+        #to zero and "current_row_number is incremented by one".
+        elif non_empty == "\n":
+            brf_rows.append("\n")
+            current_row_length = 0
+            current_row_number += 1
+        #If the current line can accomodate the "non_empty" element
+        #in addition to an empty Braille cell, then the current
+        #"brf_row" is extended with these characters and the
+        #"current_row_length" is incremented by the length
+        #of "non_empty" plus one for the empty Braille cell.
+        elif current_row_length + length_non_empty < columns_per_page:
+            brf_rows.extend(non_empty + " ")
+            current_row_length += length_non_empty+1
+        #Otherwise, a new row is started, the current "non_empty"
+        #element is appended to it along with an empty Braille cell,
+        #and the "current_row_length" counter is reset to the current
+        #contents of the new row.
+        else:
+            brf_rows.append("\n" + non_empty + " ")
+            current_row_length = length_non_empty+1
+            current_row_number += 1
+        #If the current row number is equal to "rows_per_page"-1,
+        #it means that the next line should be on the next page,
+        #given that "current_row_number" is initialized to zero.
+        #A form feed tag ("\f") is then appended to "brf_rows".
+        if current_row_number == rows_per_page-1:
+            brf_rows.append("\f")
+            current_row_length = 0
+            current_row_number = 0
 
-#"pef_file_string" is overwritten with the joining of every element
-#of the "pef_rows" list with empty strings, as the empty Braille cells
-#have already been added in between the "non_empty_braille_cells" elements.
-pef_file_string = "".join(pef_rows)
+    #"brf_file_string" is overwritten with the joining of every element
+    #of the "brf_rows" list with empty strings, as the empty Braille cells
+    #have already been added in between the "non_empty_braille_cells" elements.
+    brf_file_string = "".join(brf_rows)
 
-#After having added all of the line and section breaks, the rows will need
-#to be assembled in pages, up to the number of "lines_per_page". All of the
-#matche indices for the closing pef tags for page and row breaks will be
-#assembled in two lists and the row counter "row_count" will keep track of
-#the number of lines per page and determine when to add another page break.
-page_closing_tag_matches = re.finditer("</page>", pef_file_string)
-page_closing_tag_match_indices = [match.start() for match in page_closing_tag_matches]
+    #After adding the carriage returns, the remaining braille characters in the
+    #updated "brf_file_string" are transcribed into BRF ASCII characters.
+    mapping_table_brf = brf_file_string.maketrans(brf_characters)
+    brf_file_string = brf_file_string.translate(mapping_table_brf)
 
-row_closing_tag_matches = re.finditer("</row>", pef_file_string)
-row_closing_tag_match_indices = [match.start() for match in row_closing_tag_matches]
-row_count = 0
-#The "for" loop proceeds in reverse order, so as to avoid indexing issues
-#while adding page break pef tags to the "pef_file_string". Provided that
-#"page_closing_tag_match_indices" is not an empty list and contains the
-#indices at which page break closing pef tags are located, verification
-#will be made that the current row pef closing tag under investigation at
-#index "row_closing_tag_match_indices[i]" lies after the next page break
-#(" page_closing_tag_match_indices[-1]"). Should that not be the case,
-#the row_count is reinitialized at 0, as a new page has begun and so no
-#further page breaks are required until the counter reaches the maximal
-#line number per page. The code effectively walks up the "pef_file_string"
-#from the end to the beginning and inserts page breaks whenever "row_count"
-#equals the "lines_per_page" minus one, insofar as the next page break has
-#not yet been reached.
-for i in range(len(row_closing_tag_match_indices)-1, -1, -1):
-    if (i > 0 and row_count < lines_per_page - 1 and
-    (page_closing_tag_match_indices == [] or row_closing_tag_match_indices[i] > page_closing_tag_match_indices[-1])):
-        row_count += 1
-    elif (i > 0 and row_count == lines_per_page - 1 and
-    (page_closing_tag_match_indices == [] or row_closing_tag_match_indices[i] > page_closing_tag_match_indices[-1])):
-        pef_file_string = (pef_file_string[:row_closing_tag_match_indices[i]+7] +
-        "\t\t\t\t</page>\n\t\t\t\t<page>\n\t" + pef_file_string[row_closing_tag_match_indices[i]+8:])
-        row_count = 0
-    elif (page_closing_tag_match_indices != [] and
-    row_closing_tag_match_indices[i] <= page_closing_tag_match_indices[-1]):
-        page_closing_tag_match_indices.pop()
-        row_count = 0
-
-#PEF file is assembled by including opening and closing volume, section,
-#page and row tags, with the "pef_file_string" sandwitched in between.
-#The variables "columns_per_page" and "lines_per_page" are included in the
-#"<volume>" PEF tag to ensure that the PEF file is generated according
-#to the users specifications.
-with open(os.path.join(cwd, "OCR Predictions", OCR_text_file_name, OCR_text_file_name +  ".pef"), "w") as pef_file:
-    pef_file.write("""<?xml version="1.0" encoding="UTF-8"?>
-<pef version="2008-1" xmlns="http://www.daisy.org/ns/2008/pef">
-	<head>
-		<meta xmlns:dc="http://purl.org/dc/elements/1.1/">
-			<dc:format>application/x-pef+xml</dc:format>
-			<dc:identifier>org.pef-format.00002</dc:identifier>
-		</meta>
-	</head>
-	<body>
-		<volume cols=""" + '"' + str(columns_per_page) + '"' + " rows=" + '"'
-        + str(lines_per_page) +  '"' + """ rowgap="0" duplex="false">
-			<section>
-				<page>
-					<row>⠀""" + pef_file_string +
-        """</row>
-				</page>
-			</section>
-		</volume>
-	</body>
-</pef>""")
+    #A BRF file is assembled here
+    with open(os.path.join(cwd, "OCR Predictions", OCR_text_file_name, OCR_text_file_name + ".brf"), "w", encoding = "utf-8") as brf_file:
+        brf_file.write(brf_file_string)
 
 
 #Removing "dot locator for mention" from the Braille characters, as these won't be
 #needed in the English print transcribed form. However, these will remain in the
-#Portable Embosser Format (PEF) files. This needs to be done before removing the
+#Braille Ready File format (BRF) files. This needs to be done before removing the
 #typos, in the event that there was a typo immediately after a "dot locator for mention"
 #symbol, which would result in at least two consecutive "⠿" symbols that would be removed,
-#leaving behind a "⠨" character. (This step will not be performed when generating the PEF file.)
+#leaving behind a "⠨" character. (This step will not be performed when generating the BRF file.)
 
 #Also, an empty Braille cell is added at the end of the OCR document because some of the
 #transcription Python code below looks at the character following a match in order to decide
@@ -557,7 +618,7 @@ dot_locator = re.compile("⠨⠿")
 new_character_string = re.sub(dot_locator,"", character_string) + "⠀"
 
 #The transcriber-defined typeform indicators must be removed from the printed English transcription,
-#(This step will not be performed when generating the PEF file.)
+#(This step will not be performed when generating the BRF file.)
 tdti_list = ["⠈⠼⠂", "⠈⠼⠆", "⠈⠼⠶", "⠈⠼⠠", "⠘⠼⠂", "⠘⠼⠆", "⠘⠼⠶", "⠘⠼⠠", "⠸⠼⠂", "⠸⠼⠆", "⠸⠼⠶",
 "⠸⠼⠠", "⠐⠼⠂", "⠐⠼⠆", "⠐⠼⠶", "⠐⠼⠠", "⠨⠼⠂", "⠨⠼⠆", "⠨⠼⠶" "⠨⠼⠠"]
 for tdti in tdti_list:
@@ -2415,6 +2476,6 @@ for escape in rtf_escapes:
 #been written after "\par", as the same space will be found after  "\tab".
 new_character_string = re.sub("⠀", " ", new_character_string).strip().replace(r"\par", r"\par \tab")
 
-with open(os.path.join(cwd, "OCR Predictions", OCR_text_file_name, OCR_text_file_name + ".rtf"), "w") as rtf_file:
+with open(os.path.join(cwd, "OCR Predictions", OCR_text_file_name, OCR_text_file_name + ".rtf"), "w", encoding = "utf-8") as rtf_file:
     rtf_file.write(r"{\rtf1 \ansi \deff0 {\fonttbl {\f0 Ubuntu;}}\f0 \fs24 " + new_character_string)
     rtf_file.write("}")
