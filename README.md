@@ -1,24 +1,23 @@
 # BRL-Slate-Reader
 This braille OCR application can convert JPEG braille text images into RTF documents, while removing typos for you!
 
-![Image RTF basic mode](https://github.com/LPBeaulieu/e-Braille-Tales/blob/main/e-Braille%20Tales%20Thumbnail.png)
-<h3 align="center">e-Braille Tales</h3>
+![Thumbnail](https://github.com/LPBeaulieu/Braille-OCR-BRL-Slate-Reader/blob/main/Github%20Page%20Images/BRL-Slate-Reader%20Thumbnail.png)
+<h3 align="center">BRL-Slate-Reader</h3>
 <div align="center">
   
-  [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPLv3.0-brightgreen.svg)](https://github.com/LPBeaulieu/e-Braille-Tales/blob/main/LICENSE)
-  [![GitHub last commit](https://img.shields.io/github/last-commit/LPBeaulieu/e-Braille-Tales)](https://github.com/LPBeaulieu/e-Braille-Tales)
-  [![GitHub issues](https://img.shields.io/github/issues/LPBeaulieu/e-Braille-Tales)](https://github.com/LPBeaulieu/e-Braille-Tales)
+  [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPLv3.0-brightgreen.svg)](https://github.com/LPBeaulieu/Braille-OCR-BRL-Slate-Reader/blob/main/LICENSE)
+  [![GitHub last commit](https://img.shields.io/github/last-commit/LPBeaulieu/Braille-OCR-BRL-Slate-Reader)](https://github.com/LPBeaulieu/Braille-OCR-BRL-Slate-Reader)
+  [![GitHub issues](https://img.shields.io/github/issues/LPBeaulieu/Braille-OCR-BRL-Slate-Reader)](https://github.com/LPBeaulieu/Braille-OCR-BRL-Slate-Reader)
   
 </div>
 
 ---
 
-<p align="left"> <b>e-Braille Tales</b> is a tool enabling you to convert scanned braille pages (in JPEG image format and typed on a Perkins Brailler) into Portable Embosser Format (PEF) digitized braille and rich text format (RTF) documents, complete with formatting elements such as alignment, paragraphs, <u>underline</u>, <i>italics</i>, <b>bold</b> and <del>strikethrough</del>, basically allowing you to include any formatting encoded by RTF commands or braille typeform indicators.</p>
-<p align="left"> A neat functionality of <b>e-Braille Tales</b> is that the typos (sequence of at least two successive full braille cells)
-  automatically get filtered out, and do not appear in the final RTF text nor in the PEF file. The PEF file can in turn be used to print out copies of your work on a braille embosser, or to read them electronically using a refreshable braille display.
+<p align="left"> <b>BRL-Slate-Reader</b> is a tool enabling you to convert scanned braille pages (in JPEG image format and written with a Braille slate) into Braille Ready File (BRF) digitized braille and rich text format (RTF) documents, complete with formatting elements such as alignment, paragraphs, <u>underline</u>, <i>italics</i>, <b>bold</b> and <del>strikethrough</del>, basically allowing you to include any formatting encoded by RTF commands or braille typeform indicators.</p>
+<p align="left"> A neat functionality of <b>BRL-Slate-Reader</b> is that the typos (sequence of at least two successive full braille cells)
+  automatically get filtered out, and do not appear in the final RTF text nor in the BRF file. The BRF file can in turn be used to print out copies of your work on a braille embosser, or to read them electronically using a refreshable braille display.
   
-  - My <b>deep learning model</b> for the Perkins Brailler along with the dataset and other useful information may be found on my Google Drive at the following link: https://drive.google.com/drive/folders/1RNGUoBJOSamYOaO7ElFBeWIRVpHtlQpd?usp=sharing. 
-- The code showcased in this github page is the one that was used to generate a model with <b>99.97% optical character recognition (OCR) accuracy</b> with the Perkins Brailler (I'm not affiliated with them, no worries).
+  - My <b>deep learning model</b> for the Perkins Brailler along with the dataset and other useful information may be found on my Google Drive at the following link: https://drive.google.com/drive/folders/1RNGUoBJOSamYOaO7ElFBeWIRVpHtlQpd?usp=sharing. The model is also available for download on this github repo. Also check out my other github repo <b>e-Braille Tales</b> for a similar OCR application with the Perkins Brailler (https://github.com/LPBeaulieu/Braille-OCR-e-Braille-Tales).
   
     <br> 
 </p>
@@ -35,85 +34,67 @@ This braille OCR application can convert JPEG braille text images into RTF docum
   deep learning model, which allows for braille optical character recognition (OCR). It also needs OpenCV to perform image segmentation 
   (to crop the individual characters in the braille page images).
   
-- When typing text on the Perkins Brailler, unless a space is included at the end of a line or at the beginning of the next line, the last word on the line will be merged with the first characters on the next one, up to the next space. As such, the <b>"line continuation without space" braille symbol ("⠐") is not required and should be avoided</b>, as it could be confused with other braille characters, such as initial-letter contractions. However, line continuations with a space ("⠐⠐") can be used without problem in this application.
+- When writing text on the Braille slate, unless a space is included at the end of a line or at the beginning of the next line, the last word on the line will be merged with the first characters on the next one, up to the next space. As such, the <b>"line continuation without space" braille symbol ("⠐") is not required and should be avoided</b>, as it could be confused with other braille characters, such as initial-letter contractions. However, line continuations with a space ("⠐⠐") can be used without problem in this application.
 
 - In this application a space needs to be included after any RTF command (even though the RTF specifications state that it is an optional space). The reason for this is that when the code is transcribing the braille into printed English, it often needs to determine if any given braille character stands alone. A braille character that stands alone means that it is flanked by characters such as empty braille cells ("⠀") or dashes, but not by a       braille character mapping to a letter or number, such that can be found at the end of every RTF command. In other words, <b>you must include a space after any RTF commands</b>. Here is an example: "This requirement \strike strikes \strike0 me as being important!", which in braille would be written as follows: "⠠⠹⠀⠗⠑⠟⠥⠊⠗⠑⠰⠞⠀⠸⠡⠎⠞⠗⠊⠅⠑⠀⠎⠞⠗⠊⠅⠑⠎⠀⠸⠡⠎⠞⠗⠊⠅⠑⠼⠚⠀⠍⠑⠀⠵⠀⠆⠬⠀⠊⠍⠏⠕⠗⠞⠁⠝⠞⠖".
 
-- Importantly, <b>the pages must be scanned with the left margin placed on the flatbed scanner in such a way that the shadows produced by the 
-  scanner light will face away from the left margin</b> (the shadows will face the right margin of the page, when the page is viewed in landscape mode). 
-  This is because the non-white pixels actually result from the presence of shadows, the orientation of which plays a major role in image segmentation (determining the x and y coordinates of the individual characters) and optical character recognition (OCR). For best results, the braille document 
-  should be <b>typed on white braille paper or cardstock and scanned as grayscale images on a flatbed scanner at a 300 dpi resolution with the paper size setting of the scanner set to letter 8 1/2" x 11" (A4)</b>. The darkness settings of the scanner might also need to be adjusted to acheive an optimal braille shadow to noise ratio. When scanning the braille pages, <b>some weight (such as 6-inch metal rulers) should be placed on the back of the braille pages to prevent them from sliding on the glass of the flatbed scanner</b>. The pages tend to move around when closing the lid, as there is very little friction keeping them in place, since their only points of contact with the glass are the embossed braille dots. Should the page move out of line, then the segmentation results could be adversely affected. <b>To ensure that the segmentation has proceeded adequately, the segmentation result image (scanned image overlaid with green character rectangles) for every scanned page of the braille document should be quickly inspected</b>. These         images are generated by the code and stored in the "Page image files with rectangles" folder, which is created automatically by the code.  
+- Importantly, <b>the pages must be scanned in landscape mode, with the left margin placed on the flatbed scanner in such a way that the shadows produced by the scanner light will face away from the left margin</b> (the shadows will face the right margin of the page, when the page is viewed in landscape mode). This is because the non-white pixels actually result from the presence of shadows, the orientation of which plays a major role in image segmentation (determining the x and y coordinates of the individual characters) and optical character recognition (OCR). For best results, the braille document should be <b>typed on white braille paper or cardstock and scanned in landscape mode as grayscale images on a flatbed scanner at a 300 dpi resolution with the paper size setting of the scanner set to letter 8 1/2" x 11"</b>. The darkness settings of the scanner might also need to be adjusted to acheive an optimal braille shadow to noise ratio. When scanning the braille pages, care should be taken to close the scanner lid slowly, so as to avoid moving the page, which could result in misalignment and subsequent segmentation issues. <b>To ensure that the segmentation has proceeded adequately, the segmentation result image (scanned image overlaid with green character rectangles) for every scanned page of the braille document should be quickly inspected</b>. These images are generated by the code and stored in the "Page image files with rectangles" folder, which is created automatically by the code.  
   
-- <b>The left margin on the Perkins Brailler should be set at its minimal setting</b> in order to maximize the printable space on the page and to always provide the same reference point to the code for the segmentation step. <b>The pixel "x_min", at which the code starts cropping characters on every line, needs to be entered manually in the code, as you initially calibrate the code to your own brailler and scanner combination</b>. In my case, the value of the   variable "x_min" is set to 282 pixels in line 140 of the Python code "e-braille-tales.py". After running the code on a scanned braille text image of yours, you could then open the JPEG image overlaid with green character rectangles (see Figure 1 below) in a photo editing software such as GIMP, in order to locate the pixel value along the x axis (in landscape mode) at which the segmentation should start in each line. 
+- <b>The slate must be calibrated</b>, meaning that the number of pixels between a dot in the top left Braille cell and its corresponding dot in the top right Braille cell (in landscape mode, see Figure for more on this step). The same procedure needs to be done for the vertical dimension of the slate that is within the frame of the scanner in landscape mode. That is to say, you must provide the number of pixels between a dot in the top left corner, and the corresponding dot in the lowest cell on the left edge of the slate that fits onto the scanner in landscape mode. Additionally, the number of columns and the number of rows that will be visible on the scanner in landscape mode need to be provided. Finally, the "x" and "y" pixel coordinates of the center of the top left dot of the top left Braille cell need to be passed in when calibrating the slate. When running the code, it will provide you with the number of horizontal and vertical pixels in-between braille cells that has been calculated using the above information. However, you might want to fine-tune the calibration step by increasing or decreasing the value of "horizontal_spacer_pixels:" and "vertical_spacer_pixels:" that were calculated by the code. Simply pass in your numbers of choice after these arguments when running the code, and check the scanned image overlaid with green segmentation rectangles to see if there are any improvements. Adjust the value of these variables until the green rectangles line up nicely with the braille characters on the image. The code will then remember these optimal parameters for the calibrated slate, which are stored in the "Default_Parameters" folder, which is created automatically by the code.   
 
- - Every brailled line should have braille characters that when taken together contain at least three dots per braille cell row in order to be properly detected. Should a line only contain characters that do not have dots in one or more of the three braille cell rows, you could make up for the missing dots by using at least two successive full braille cells ("⠿") before or after the text (for example: "⠿⠿⠿YOUR SHORT BRAILLE LINE HERE"), which will be interpreted by the code as a typo, and    will not impact the meaningful text on the line in the final Rich Text Format (RTF) and Portable Embosser Format (PEF) files.
+- When filling in the cells of mistakes, make sure that there are at least two consecutive full braille cells ("⠿") after correction, as otherwise a single full cell will be interpreted as "for" in the RTF document. 
  
  
 ## 🏁 Getting Started <a name = "getting_started"></a>
 
-The following instructions will be provided in great detail, as they are intended for a broad audience and will allow to run a copy of <b>e-Braille Tales</b> on a local computer. As the steps 1 through 8 described below are the same as for my other project <b>Tintype Text</b>  (https://github.com/LPBeaulieu/Typewriter-OCR-TintypeText), a link is provided here to an instructional video explaining how to set up <b>Tintype Text</b>: https://www.youtube.com/watch?v=FG9WUW6q3dI&list=PL8fAaOg_mhoEZkbQuRgs8MN-QSygAjdil&index=2.
+The following instructions will be provided in great detail, as they are intended for a broad audience and will
+allow to run a copy of <b>BRL-Slate-Reader</b> on a local computer.
 
-The paths included in the code are formatted for Unix (Linux) operating systems (OS), so the following instructions 
-are for Linux OS environments.
+The instructions below are for Windows operating systems, and while I am not 100% sure that it is able to run on Windows, I made every effort to adapt the code so that it would be compatible, but the code runs very nicely on Linux.
 
-<b>Step 1</b>- Go to the command line in your working folder and install the <b>Atom</b> text editor to make editing the code easier:
-```
-sudo snap install atom --classic
-```
+Start by holding the "Shift" key while right-clicking in your working folder, then select "Open PowerShell window here" to access the PowerShell in your working folder and enter the commands described below.
 
-<b>Step 2</b>- Create a virtual environment (called <i>env</i>) in your working folder:
+<b>Step 1</b>- Install <b>PyTorch</b> (Required Fastai library to convert images into a format usable for deep learning) using the following command (or the equivalent command found at https://pytorch.org/get-started/locally/ suitable to your system):
 ```
-python3 -m venv env
+pip3 install torch torchvision torchaudio
 ```
 
-<b>Step 3</b>- Activate the <i>env</i> virtual environment <b>(you will need to do this step every time you use the Python code file)</b> 
-in your working folder:
+<b>Step 2</b>- Install the <i>CPU-only</i> version of <b>Fastai</b>, which is a deep learning Python library. The CPU-only version suffices for this application, at least when running on Linux, as the character images are very small in size:
 ```
-source env/bin/activate
-```
-
-<b>Step 4</b>- Install <b>PyTorch</b> (Required Fastai library to convert images into a format usable for deep learning) using the following command (or the equivalent command found at https://pytorch.org/get-started/locally/ suitable to your system):
-```
-pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu
+py -m pip install fastai
 ```
 
-<b>Step 5</b>- Install the <i>CPU-only</i> version of <b>Fastai</b> (Deep Learning Python library, the CPU-only version suffices for this application, as the character images are very small in size):
+<b>Step 3</b>- Install <b>OpenCV</b> (Python library for image segmentation):
 ```
-pip install fastai
-```
-
-<b>Step 6</b>- Install <b>OpenCV</b> (Python library for image segmentation):
-```
-pip install opencv-python
+py -m pip install opencv-python
 ```
 
-<b>Step 7</b>- Install <b>alive-Progress</b> (Python module for a progress bar displayed in command line):
-```
-pip install alive-progress
-```
-
-<b>Step 8</b>- Create the folder "OCR Raw Data" in your working folder:
+<b>Step 4</b>- Create the folder "OCR Raw Data" in your working folder:
 ```
 mkdir "OCR Raw Data" 
 ```
-<b>Step 9</b>- You're now ready to use <b>e-Braille Tales</b>! 🎉
+
+<b>Step 5</b>- You're now ready to use <b>BRL-Slate-Reader</b>! 🎉
 
 ## 🎈 Usage <a name="usage"></a>
-The "e-braille-tales.py" Python code converts JPEG braille text scans into printed English in the form of a Rich Text Format (RTF) document and digitized braille as a Portable Embosser Format (PEF) file. In addition to the RTF and PEF files, the code will generate a braille text file (".txt") containing the OCR results before transcription to printed English, so that you could revisit the text in braille form. Each page of this ".txt" file will line up with the pages written on the Perkins Brailler and will be separated from one another by two carriage returns, to ensure easy navigation throughout the document. You can find instructions on how to use <b>e-Braille Tales</b> on my YouTube channel: https://www.youtube.com/watch?v=U8-s8eQXInI.<br>
+The "BRL-Slate-Reader.py" Python code converts JPEG braille text scans into printed English in the form of a Rich Text Format (RTF) document and digitized braille as a Portable Embosser Format (PEF) file. In addition to the RTF and PEF files, the code will generate a braille text file (".txt") containing the OCR results before transcription to printed English, so that you could revisit the text in braille form. Each page of this ".txt" file will line up with the pages written on the Perkins Brailler and will be separated from one another by two carriage returns, to ensure easy navigation throughout the document. You can find instructions on how to use <b>BRL-Slate-Reader</b> on my YouTube channel: https://www.youtube.com/watch?v=U8-s8eQXInI.<br>
 
 - In order to submit a scanned braille text page to the code, you will need to <b>place the JPEG image in the "OCR Raw Data" subfolder of your working     folder</b>, which you created at step 8 of the "Getting Started" section.
 
 - <b>Please note that all of the JPEG file names in the "OCR Raw Data" folder must contain at least one hyphen ("-") in order for the code
   to properly create subfolders in the "OCR Predictions" folder.</b> These subfolders will contain the RTF document, along with the PEF and ".txt" braille files. The reason for this is that when you will scan a multi-page document, you will provide your scanner with a file root name (e.g. "my_text-") and the scanner will number them automatically (e.g."my_text-.jpg", "my_text-0001.jpg", "my_text-0002.jpg", "my_text-"0003.jpg", etc.) and   the code would then label the subfolder within the "OCR Predictions" folder as "my_text". The OCR prediction results for each page will be added in sequence to the "my_text.txt" file within the "my_text" subfolder of the "OCR Predictions" folder. Should you ever want to repeat the OCR prediction for a set of JPEG images, it would then be important to remove the "my_text" subfolder before running the "get_predictions.py" code once more, in order to avoid appending more text to the existing "my_text.txt" file.
   
-- Then, run the "e-braille-tales.py" Python script by opening the command line from your working folder, such that you will already be in the correct path and copy and paste the following in command line:  
+- Then, run the "BRL-Slate-Reader.py" Python script by opening the command line from your working folder, such that you will already be in the correct path and copy and paste the following in command line:  
 ```
-python3 e-braille-tales.py
+python3 BRL-Slate-Reader.py
 ```
 
-- The first thing that the code will do is perform segmentation (determine the x and y coordinates of every braille character). The segmentation results are visible in the "Page image files with rectangles" folder, which is created automatically by the code. You might need to <b>adjust the value of the variable "x_min" at line 140 of the "e-braille-tales.py" Python code</b>, in order to initially calibrate the code to your Perkins Brailler/scanner combination. Remember to <b>always set the left margin of the Perkins Brailler to its minimum setting</b> (see explanation above in the                   "Dependencies / Limitations" section). Go ahead and open the JPEG file with segmentation results (green rectangles) in a photo editing software such as GIMP. Take note of the pixel at which the braille character starts along the x axis (in landscape mode) and update the value at line 140 of the "e-braille-tales.py" Python code. You should only need to find the pixel value of "x_min" and update it in the code once, as illustrated in Figure 1. 
+- The first thing that the code will do is perform segmentation (determine the x and y coordinates of every braille character). The segmentation results are visible in the "Page image files with rectangles" folder, which is created automatically by the code. You might need to <b>adjust the value of the variable "x_min" at line 140 of the "BRL-Slate-Reader.py" Python code</b>, in order to initially calibrate the code to your Perkins Brailler/scanner combination. Remember to <b>always set the left margin of the Perkins Brailler to its minimum setting</b> (see explanation above in the                   "Dependencies / Limitations" section). Go ahead and open the JPEG file with segmentation results (green rectangles) in a photo editing software such as GIMP. Take note of the pixel at which the braille character starts along the x axis (in landscape mode) and update the value at line 140 of the "e-BRL-Slate-Reader.py" Python code. You should only need to find the pixel value of "x_min" and update it in the code once, as illustrated in Figure 1. 
 
-![Image txt file processing](https://github.com/LPBeaulieu/Braille-OCR-e-Braille-Tales/blob/main/Figure%201%20(explanation%20of%20x_min).png)<hr>
+![Braille Slate Calibration Instructions](https://github.com/LPBeaulieu/Braille-OCR-BRL-Slate-Reader/blob/main/Github%20Page%20Images/Slate%20Calibration%20Instructions.png)<hr>
+<b>Figure 1</b>: The pixel along the x-axis (in landscape mode) at which segmentation should start on every line can be found by opening the scanned braille JPEG image in a photo editing software such as GIMP and locating the pixel closest to the left margin (see red arrows), here "x_min" is set to 282 pixels.
+
+![Finding the pixel coordinates in GIMP](https://github.com/LPBeaulieu/Braille-OCR-BRL-Slate-Reader/blob/main/Github%20Page%20Images/Finding%20the%20pixel%20coordinates%20in%20GIMP.png)<hr>
 <b>Figure 1</b>: The pixel along the x-axis (in landscape mode) at which segmentation should start on every line can be found by opening the scanned braille JPEG image in a photo editing software such as GIMP and locating the pixel closest to the left margin (see red arrows), here "x_min" is set to 282 pixels.
 
 - Alternatively, it is possible to resubmit the text (".txt") file to the "e-braille-tales.py" Python code once you have made modifications to it. The braille text will be extracted from the ".txt" file and the carriage returns that were introduced to facilitate proofreading will be automatically removed by the code, if still present. Simply place the corrected ".txt" file in the "OCR Raw Data" subfolder of your working folder and include the name of your text file when running the Python code, as follows:
