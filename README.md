@@ -1,7 +1,7 @@
 # BRL-Slate-Reader
 This braille OCR application can convert JPEG braille text images into RTF documents, while removing typos for you!
 
-![Thumbnail](https://github.com/LPBeaulieu/Braille-OCR-BRL-Slate-Reader/blob/main/Github%20Page%20Images/BRL-Slate-Reader%20Thumbnail.png)
+![Thumbnail](https://github.com/LPBeaulieu/Braille-OCR-BRL-Slate-Reader/blob/main/Github%20Page%20Images/BRL-Slate-Reader%20Demonstration.png)
 <h3 align="center">BRL-Slate-Reader</h3>
 <div align="center">
   
@@ -34,7 +34,7 @@ This braille OCR application can convert JPEG braille text images into RTF docum
   deep learning model, which allows for braille optical character recognition (OCR). It also needs OpenCV to perform image segmentation 
   (to crop the individual characters in the braille page images).
   
-- When writing text on the Braille slate, unless a space is included at the end of a line or at the beginning of the next line, the last word on the line will be merged with the first characters on the next one, up to the next space. As such, the <b>"line continuation without space" braille symbol ("⠐") is not required and should be avoided</b>, as it could be confused with other braille characters, such as initial-letter contractions. However, line continuations with a space ("⠐⠐") can be used without problem in this application.
+- When writing text on the Braille slate, unless a space is included at the end of a line or at the beginning of the next line, the last word on the line will be merged with the first characters on the next one, up to the next space. Funnily enough, this is illustrated in the thumbnail above, where you can see that I forgot to put a space in-between "a" and "slate" when writing on the slate. As such, the <b>"line continuation without space" braille symbol ("⠐") is not required and should be avoided</b>, as it could be confused with other braille characters, such as initial-letter contractions. However, line continuations with a space ("⠐⠐") can be used without problem in this application.
 
 - In this application a space needs to be included after any RTF command (even though the RTF specifications state that it is an optional space). The reason for this is that when the code is transcribing the braille into printed English, it often needs to determine if any given braille character stands alone. A braille character that stands alone means that it is flanked by characters such as empty braille cells ("⠀") or dashes, but not by a       braille character mapping to a letter or number, such that can be found at the end of every RTF command. In other words, <b>you must include a space after any RTF commands</b>. Here is an example: "This requirement \strike strikes \strike0 me as being important!", which in braille would be written as follows: "⠠⠹⠀⠗⠑⠟⠥⠊⠗⠑⠰⠞⠀⠸⠡⠎⠞⠗⠊⠅⠑⠀⠎⠞⠗⠊⠅⠑⠎⠀⠸⠡⠎⠞⠗⠊⠅⠑⠼⠚⠀⠍⠑⠀⠵⠀⠆⠬⠀⠊⠍⠏⠕⠗⠞⠁⠝⠞⠖".
 
@@ -52,7 +52,7 @@ python3 brl-slate-reader.py "top_left_x_pixel:351" "top_left_y_pixel:2348" "hori
 <br><br>
 - Make sure to <b>always load the paper on a flat surface, in order to properly line up the page in the slate, with the hinge to your left and the braille cell windows opening away from you, and the other side of the page reaching up to the hinges</b>. This will ensure that you will achieve reproducible segmentation results when performing OCR with your calibrated slate. 
 
-- When filling in the cells of mistakes, make sure that there <b>are at least two consecutive full braille cells ("⠿") after correction, as otherwise a single full cell will be interpreted as "for" in the RTF document</b>. 
+- When filling in the cells of mistakes, make sure that there <b>are at least two consecutive full braille cells ("⠿") after correction, as otherwise a single full cell will be interpreted as "for" in the RTF document</b>. It is also good to know that erasing mistakes with a Braille eraser often leaves grooves on the page that are picked up as dots during the OCR step. I would then advise you to simply use at least two consecutive full Braille cells to mark your mistakes. 
  
  
 ## 🏁 Getting Started <a name = "getting_started"></a>
