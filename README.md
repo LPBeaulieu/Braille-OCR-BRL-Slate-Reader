@@ -110,7 +110,7 @@ py brl-slate-reader.py "my_text_file_name.txt"
  
 - The following RTF commands are automatically converted into BRF tags by the code and are transcribed from Braille into English RTF commands in the RTF file: 
 
-  - The Braille equivalent of the tab RTF command "\tab" ("⠸⠡⠞⠁⠃") will be changed to two successive spaces ("  ") in the BRF file.
+  - The Braille equivalent of the tab RTF command "\tab" ("⠸⠡⠞⠁⠃") will be changed to two successive spaces ("  ") in the BRF file.
   - A line break RTF command "\line" ("⠸⠡⠇⠔⠑") will be converted into a line break ("\n") in the BRF file.
   - New paragraph RTF commands "\par" ("⠸⠡⠏⠜") will be mapped to a line break followed by two successive spaces ("\n  ") in the BRF file, as new paragraphs in Braille documents typically begin with two empty Braille cells that serve as a tab. Similarly, in the RTF document, any Braille new paragraph RTF commands "\par" ("⠸⠡⠏⠜") will be switched to "\par \tab" to add a tab at the start of every new paragraph.
   - The page break RTF commands "\page" ("⠸⠡⠏⠁⠛⠑") are changed for a form feed tag ("\f") in the BRF file.
