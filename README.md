@@ -50,7 +50,7 @@ python3 brl-slate-reader.py "top_left_x_pixel:351" "top_left_y_pixel:2348" "hori
 ![Finding the pixel coordinates in GIMP](https://github.com/LPBeaulieu/Braille-OCR-BRL-Slate-Reader/blob/main/Github%20Page%20Images/Finding%20the%20pixel%20coordinates%20in%20GIMP.png)<hr>
 <b>Figure 2</b>: The "x" and "y" pixel coordinates of the center of the top left dot of the top left Braille cell need to be passed in when calibrating the slate, after the "top_left_x_pixel:" and "top_left_y_pixel:" arguments, respectively. The GIMP software allows you to find the "y,x" coordinates in the lower left corner of the window. Note that the "y" coordinate shows up before the "x" coordinate, as the page was scanned in landscape mode.
 <br><br>
-- Make sure to <b>always load the paper using a flat surface, in order to properly line up the page in the slate, with the hinge to your left and the braille cell windows opening away from you, and the other side of the page reaching up to the hinges</b>. This will ensure that you will achieve reproducible segmentation results when performing OCR with your calibrated slate. 
+- Make sure to <b>always load the paper on a flat surface, in order to properly line up the page in the slate, with the hinge to your left and the braille cell windows opening away from you, and the other side of the page reaching up to the hinges</b>. This will ensure that you will achieve reproducible segmentation results when performing OCR with your calibrated slate. 
 
 - When filling in the cells of mistakes, make sure that there <b>are at least two consecutive full braille cells ("⠿") after correction, as otherwise a single full cell will be interpreted as "for" in the RTF document</b>. 
  
