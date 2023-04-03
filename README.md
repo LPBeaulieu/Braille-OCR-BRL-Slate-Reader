@@ -118,7 +118,7 @@ py brl-slate-reader.py "my_text_file_name.txt"
 
   These are the only RTF commands that are automatically removed from the Braille text and converted into BRF tags. All other RTF commands (if present) will be carried over in Braille form into the BRF file and could be removed manually afterwards. However, as Braille already encompasses typeform  indicators for symbols, words and passages written in caps, italics, bold, underline or script (font size of 28), as well as symbols in superscript or   subscript, there should be limited need to resort to other RTF commands than those listed above. 
   
-- When using grade I ("⠰") or numeric ("⠼") indicators, these should be placed directly in front of the characters they will be affecting. The next order of priority is the capitalization indicators ("⠠"), followed by the other typeform indicators (bold, italics, underline, script) and finally by superscript "⠰⠔" or subscript "⠰⠢" indicators. 
+- When using grade 1 ("⠰") or numeric ("⠼") indicators, these should be placed directly in front of the characters they will be affecting. The next order of priority is the capitalization indicators ("⠠"), followed by the other typeform indicators (bold, italics, underline, script) and finally by superscript "⠰⠔" or subscript "⠰⠢" indicators. 
  
      
 <br><b>And that's it!</b> You're now ready to convert your Braille manuscript into digital format! If you are close to someone who is visually impaired and would like to help them find meaningful work through technology, or maybe if you are only sprucing up your Braille skills in preparation for the Zombie Apocalypse (lol) then this app is for you! 🎉📖
