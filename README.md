@@ -52,7 +52,7 @@ python3 brl-slate-reader.py "top_left_x_pixel:351" "top_left_y_pixel:2348" "hori
 <br><br>
 - Make sure to <b>always load the paper on a flat surface, in order to properly line up the page in the slate, with the hinge to your left and the Braille cell windows opening away from you, and the other side of the page reaching up to the hinges.  You also need to always position the sheet of paper in the same way on the flatbed scanner.</b> This will ensure that you will achieve reproducible segmentation results when performing OCR with your calibrated slate. 
 
-- When filling in the cells of mistakes, make sure that there <b>are at least two consecutive full Braille cells ("⠿") after correction, as otherwise a single full cell will be interpreted as "for" in the RTF document</b>. It is also good to know that erasing mistakes with a Braille eraser often leaves grooves on the page that are picked up as dots during the OCR step. I would then advise you to simply use at least two consecutive full Braille cells to mark your mistakes. 
+- When filling in the Braille cells containing mistakes, make sure that there <b>is at least one adjoining  full Braille cell ("⠿") next to the correction, as otherwise a single full cell would be interpreted as "for" in the RTF document, and wouldn't be removed from the BRF file</b>. It is also good to know that erasing mistakes with a Braille eraser often leaves grooves on the page that are picked up as dots during the OCR step. I would then advise you to simply use at least two consecutive full Braille cells to mark your mistakes. 
  
  
 ## 🏁 Getting Started <a name = "getting_started"></a>
@@ -87,7 +87,7 @@ mkdir "OCR Raw Data"
 <b>Step 5</b>- You're now ready to use <b>BRL-Slate-Reader</b>! 🎉
 
 ## 🎈 Usage <a name="usage"></a>
-The "BRL-Slate-Reader.py" Python code converts JPEG Braille text scans into printed English in the form of a Rich Text Format (RTF) document and digitized Braille as a Braille Ready File (BRF) file. In addition to the RTF and BRF files, the code will generate a Braille text file (".txt") containing the OCR results before transcription to printed English, so that you could revisit the text in Braille form. Each page of this ".txt" file will line up with the pages written on the slate and will be separated from one another by two carriage returns, to ensure easy navigation throughout the document. You can find instructions on how to use <b>BRL-Slate-Reader</b> on my YouTube channel: <b>The video link will be added after the video will be posted</b>.<br>
+The "BRL-Slate-Reader.py" Python code converts JPEG Braille text scans into printed English in the form of a Rich Text Format (RTF) document and digitized Braille as a Braille Ready File (BRF). In addition to the RTF and BRF files, the code will generate a Braille text file (".txt") containing the OCR results before transcription to printed English, so that you could revisit the text in Braille form. Each page of this ".txt" file will line up with the pages written on the slate and will be separated from one another by two carriage returns, to ensure easy navigation throughout the document. You can find instructions on how to use <b>BRL-Slate-Reader</b> on my YouTube channel: <b>The video link will be added after the video will be posted</b>.<br>
 
 - In order to submit a scanned Braille text page to the code, you will need to <b>place the JPEG image in the "OCR Raw Data" subfolder of your working     folder</b>, which you created at step 4 of the "Getting Started" section.
 
