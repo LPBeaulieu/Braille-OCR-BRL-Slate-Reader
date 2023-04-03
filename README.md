@@ -7,7 +7,7 @@ This Braille OCR application can convert JPEG Braille text images into RTF docum
   
   [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPLv3.0-brightgreen.svg)](https://github.com/LPBeaulieu/Braille-OCR-BRL-Slate-Reader/blob/main/LICENSE)
   [![GitHub last commit](https://img.shields.io/github/last-commit/LPBeaulieu/Braille-OCR-BRL-Slate-Reader)](https://github.com/LPBeaulieu/Braille-OCR-BRL-Slate-Reader)
-  [![GitHub issues](https://img.shields.io/github/issues/LPBeaulieu/Braille-OCR-BRL-Slate-Reader)](https://github.com/LPBeaulieu/Braille-OCR-BRL-Slate-Reader)
+  [![Linux](https://svgshare.com/i/Zhy.svg)](https://svgshare.com/i/Zhy.svg)
   
 </div>
 
