@@ -106,7 +106,7 @@ py brl-slate-reader.py "my_text_file_name.txt"
 ```
 - When providing Python with the name of your file (and placing the text file in the "OCR Raw Data" folder), the OCR step will be circumvented and your Braille text will be converted into the RTF and BRF files. You can continue this process until all mistakes have been dealt with.
  
-- The following RTF commands are automatically converted into BRF tags by the code and are transcribed from Braille to English RTF commands in the RTF file: 
+- The following RTF commands are automatically converted into BRF tags by the code and are transcribed from Braille into English RTF commands in the RTF file: 
 
   - The Braille equivalent of the tab RTF command "\tab" ("⠸⠡⠞⠁⠃") will be changed to two successive spaces ("  ") in the BRF file.
   - A line break RTF command "\line" ("⠸⠡⠇⠔⠑") will be converted into a line break ("\n") in the BRF file.
