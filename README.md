@@ -60,6 +60,8 @@ python3 brl-slate-reader.py "top_left_x_pixel:351" "top_left_y_pixel:2348" "hori
 The following instructions will be provided in great detail, as they are intended for a broad audience and will
 allow to run a copy of <b>BRL-Slate-Reader</b> on a local computer.
 
+First, click on the “Code” dropdown button at the top of the github repo and click on “Download ZIP”, in order to download the compressed working folder in zip format. Extract the folder in your desired destination, then access “Braille-OCR-BRL-Slate-Reader” folder and select its contents, and cut and paste them in your working folder. Delete the empty folder and the zip file, and head back to the README file on the github page.
+
 The instructions below are for Windows operating systems, and while I am not 100% sure that it is able to run on Windows, I made every effort to adapt the code so that it would be compatible, but the code runs very nicely on Linux.
 
 Start by holding the "Shift" key while right-clicking in your working folder, then select "Open PowerShell window here" to access the PowerShell in your working folder and enter the commands described below.
